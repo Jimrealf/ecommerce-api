@@ -22,8 +22,12 @@ const registerCustomer = async (req, res) => {
         preferredPaymentMethod,
     } = req.body;
 
+    console.log('Request Body:', req.body);
+
     try {
         const user = await createUser(email, password);
+        console.log('User Created:', user);
+
         await assignRole(user.id, 'customer');
         const customerDetails = await createCustomerDetails(
             user.id,
@@ -40,9 +44,12 @@ const registerCustomer = async (req, res) => {
             customerDetails,
         });
     } catch (error) {
+        console.error('registration error:', error);
+
         if (error.code === '23505') {
             res.status(400).json({ error: 'Email already exists' });
         } else {
+            console.error('registration error:', error);
             res.status(500).json({ error: 'An unexpected error occurred' });
         }
     }
@@ -69,7 +76,15 @@ const loginCustomer = async (req, res) => {
             { expiresIn: '30d' }
         );
         res.status(200).json({ message: 'Login successful', token });
+
+        console.log('User found:', user);
+        console.log(
+            'Password match:',
+            await bcrypt.compare(password, user.password)
+        );
+        console.log('Role:', role);
     } catch (error) {
+        console.error('Login error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
